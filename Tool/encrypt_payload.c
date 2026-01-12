@@ -11,13 +11,13 @@
  *   3. IV as C array
  *
  * COMPILATION:
- * gcc encrypt_payload.c crypto.c -o encrypt_payload.exe -lAdvapi32
+ * gcc shellcrypt.c crypto.c -o shellcrypt.exe -lAdvapi32
  *
  * USAGE:
- * encrypt_payload.exe <input_file>
+ * shellcrypt.exe <input_file>
  *
  * Example:
- * encrypt_payload.exe ../payload/shellcode.bin
+ * shellcrypt.exe ./shellcode.bin
  *
  */
 
@@ -32,12 +32,12 @@ void Usage_(const char *progName)
     printf("Encrypts a shellcode file using AES-256-CBC.\n");
     printf("\n");
     printf("Example:\n");
-    printf("  %s ../payload/shellcode.bin\n", progName);
+    printf("  %s ./shellcode.bin\n", progName);
     printf("\n");
     printf("Output files:\n");
-    printf("  - ../payload/shellcode_aes.bin\n");
-    printf("  - ../payload/shellcode_aes.txt\n");
-    printf("  - ../payload/key_iv.txt\n");
+    printf("  - ./shellcode_aes.bin\n");
+    printf("  - ./shellcode_aes.txt\n");
+    printf("  - ./key_iv.txt\n");
     printf("\n");
 }
 
@@ -140,6 +140,31 @@ void WriteCArrayToFile_(const char *filename, const char *varName, const BYTE *d
 
 int main(int argc, char *argv[])
 {
+// Enable ANSI colors on Windows
+#ifdef _WIN32
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    DWORD dwMode = 0;
+    GetConsoleMode(hOut, &dwMode);
+    SetConsoleMode(hOut, dwMode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
+#endif
+
+    // Display ASCII Art Banner with colors
+    printf("\n");
+    printf("\033[1;36m                  _____ _          _ _                       _                      \033[0m\n");
+    printf("\033[1;36m                 / ____| |        | | |                     | |                     \033[0m\n");
+    printf("\033[1;36m                | (___ | |__   ___| | | ___ _ __ _   _ _ __ | |_                   \033[0m\n");
+    printf("\033[1;36m                 \\___ \\| '_ \\ / _ \\ | |/ __| '__| | | | '_ \\| __|                  \033[0m\n");
+    printf("\033[1;36m                 ____) | | | |  __/ | | (__| |  | |_| | |_) | |_                   \033[0m\n");
+    printf("\033[1;36m                |_____/|_| |_|\\___|_|_|\\___|_|   \\__, | .__/ \\__|                  \033[0m\n");
+    printf("\033[1;36m                                                  __/ | |                          \033[0m\n");
+    printf("\033[1;36m                                                 |___/|_|                          \033[0m\n");
+    printf("\n");
+    printf("\033[1;33m                    AES-256-CBC Payload Encryption Tool                       \033[0m\n");
+    printf("\033[1;32m                  Copyright (c) 2026 - 28Zaakypro@proton.me                   \033[0m\n");
+    printf("\n");
+    printf("\033[1;35m===============================================================================\033[0m\n");
+    printf("\n");
+
     if (argc != 2)
     {
         Usage_(argv[0]);
@@ -218,28 +243,28 @@ int main(int argc, char *argv[])
 
     printf("[+] Encryption successful!\n");
     printf("    Original size:  %zu bytes\n", shellcodeSize);
-    printf("    Encrypted size: %lu bytes (including PKCS#7 padding)\n", encryptedSize);
+    printf("    Encrypted size: %lu bytes\n", encryptedSize);
     printf("    Padding added:  %lu bytes\n\n", encryptedSize - shellcodeSize);
 
     // STEP 4: SAVE ENCRYPTED SHELLCODE
     printf("[*] Saving encrypted shellcode...\n");
 
     // Binary file
-    if (!WriteFile_("payload/shellcode_aes.bin", encryptedShellcode, encryptedSize))
+    if (!WriteFile_("shellcode_aes.bin", encryptedShellcode, encryptedSize))
     {
         free(plainShellcode);
         free(encryptedShellcode);
         return EXIT_FAILURE;
     }
-    printf("[+] Binary saved: payload/shellcode_aes.bin\n");
+    printf("[+] Binary saved: ./shellcode_aes.bin\n");
 
     // C array file (for easy copy/paste)
-    WriteCArrayToFile_("payload/shellcode_aes.txt", "encryptedShellcode", encryptedShellcode, encryptedSize);
+    WriteCArrayToFile_("shellcode_aes.txt", "encryptedShellcode", encryptedShellcode, encryptedSize);
 
     // STEP 5: SAVE KEY AND IV
     printf("[*] Saving key and IV...\n");
 
-    FILE *keyIvFile = fopen("payload/key_iv.txt", "w");
+    FILE *keyIvFile = fopen("key_iv.txt", "w");
     if (keyIvFile)
     {
         fprintf(keyIvFile, "// AES-256 Key (32 bytes)\n");
@@ -268,19 +293,22 @@ int main(int argc, char *argv[])
         fprintf(keyIvFile, "// Original shellcode size: %zu bytes\n", shellcodeSize);
 
         fclose(keyIvFile);
-        printf("[+] Key and IV saved: ../payload/key_iv.txt\n");
+        printf("[+] Key and IV saved: ./key_iv.txt\n");
     }
 
     printf("\n");
-    printf("ENCRYPTION COMPLET\n");
+    printf("\033[1;32m===============================================================================\033[0m\n");
+    printf("\033[1;33m                         ENCRYPTION COMPLETED                                  \033[0m\n");
+    printf("\033[1;32m===============================================================================\033[0m\n");
     printf("\n");
     printf("Next steps:\n");
-    printf("  1. Copy contents of ../payload/shellcode_aes.txt into loader_v3.c\n");
-    printf("  2. Copy key and IV from ../payload/key_iv.txt into loader_v3.c\n");
-    printf("  3. Compile loader with: gcc -O0 loader_v3.c modules/*.c modules/dosyscall.o -o output/Loader_AES.exe -ladvapi32 -lntdll -luser32\n");
+    printf("  1. Copy contents of ./shellcode_aes.txt into your malware source code\n");
+    printf("  2. Copy key and IV from ./key_iv.txt into your malware source code\n");
+    printf("\n");
+    printf("\033[1;34m===============================================================================\033[0m\n");
     printf("\n");
 
-    // Cleanu
+    // Cleanup
     SecureZeroMemory(plainShellcode, shellcodeSize);
     SecureZeroMemory(encryptedShellcode, encryptedSize);
     SecureZeroMemory(key, AES_256_KEY_SIZE);
