@@ -1,26 +1,6 @@
 /*
- *
- * MODULE: AES-256-CBC CRYPTOGRAPHY IMPLEMENTATION
- * Author: 28Zaakypro@proton.me
- *
  * This file implements all encryption/decryption functions
  * required to protect the shellcode in the loader.
- *
- * COMPILATION:
- * gcc crypto.c -o crypto.o -c -lAdvapi32 -lCrypt32
- *
- * DEPENDENCIES:
- * - Advapi32.lib : CryptAcquireContext, CryptGenRandom, CryptEncrypt, etc.
- * - Crypt32.lib  : Advanced hashing functions
- *
- * CODE STRUCTURE:
- * 1. EncryptPayload()    - AES-256-CBC encryption
- * 2. DecryptPayload()    - AES-256-CBC decryption
- * 3. GenerateRandomKey() - Secure key generation
- * 4. GenerateRandomIV()  - Secure IV generation
- * 5. PrintHex()          - Debug display
- * 6. HexStringToBytes()  - Hex → bytes conversion
- *
  */
 
 #include "crypto.h"
